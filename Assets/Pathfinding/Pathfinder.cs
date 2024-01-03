@@ -25,6 +25,7 @@ public class Pathfinder : MonoBehaviour
     void Awake()
     {
         gridManager = FindObjectOfType<GridManager>();
+        // Check if gridManager is present or not
         if (gridManager != null)
         {
             grid = gridManager.Grid;
@@ -35,6 +36,7 @@ public class Pathfinder : MonoBehaviour
 
     void Start()
     {
+        // Instialization for a path for enemies.
         GetNewPath();
     }
 
@@ -45,11 +47,17 @@ public class Pathfinder : MonoBehaviour
 
     public List<Node> GetNewPath(Vector2Int coordinates)
     {
+        // Reset all the node properties such as connectedTo, isExplored, isPath
         gridManager.ResetNodes();
+        
+        // Send the start coordinates for the search algorithm
         BreadthFirshSearch(coordinates);
+        
+        // Build the path for the enemies
         return BuildPath();
     }
 
+    // Explores the neighbors in the 4 directions right, left, up, down and stores it
     void ExploreNeighbors()
     {
         List<Node> neighbours = new List<Node>();
@@ -75,6 +83,7 @@ public class Pathfinder : MonoBehaviour
         }
     }
 
+    // Searching algorithm for shortest path distance from start to destination.
     void BreadthFirshSearch(Vector2Int coordinates)
     {
         startNode.isWalkable = true;
@@ -88,6 +97,7 @@ public class Pathfinder : MonoBehaviour
         frontier.Enqueue(grid[coordinates]);
         reached.Add(coordinates, grid[coordinates]);
 
+        //Continue to follow the explored coordinates till we reach destination.
         while(frontier.Count > 0 && isRunning)
         {
             currentSearchNode = frontier.Dequeue();
@@ -100,6 +110,7 @@ public class Pathfinder : MonoBehaviour
         }
     }
 
+    // Once the coordinates are established, build a path from it for the enemies to follow.
     List<Node> BuildPath()
     {
         startNode.isWalkable = false;
@@ -122,6 +133,7 @@ public class Pathfinder : MonoBehaviour
         return path;
     }
 
+    // Check if a tower placed can block the current path, change the state and find a new path.
     public bool WillBlockPath(Vector2Int coordinates)
     {
         if (grid.ContainsKey(coordinates))
@@ -142,6 +154,7 @@ public class Pathfinder : MonoBehaviour
         return false;
     }
 
+    // A broadcast message if a tower is placed to recalculate the new path for the enemies.
     public void NotifyReceivers()
     {
         BroadcastMessage("RecalculatePath", false, SendMessageOptions.DontRequireReceiver);
